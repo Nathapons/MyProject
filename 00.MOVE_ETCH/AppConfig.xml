@@ -1,0 +1,14 @@
+<configuration>
+    <appSettings>
+        <sql key="client" value="C:\Program Files (x86)\Oracle\instantclient_19_10" />
+        <sql key="user" value="irpt" />
+        <sql key="password" value="irptuser" />
+
+        <add key="ALERT_TO" value="nathapon.s@th.fujikura.com" />
+        <add key="ALERT_CC" value="nathapon.s@th.fujikura.com" />
+        <add key="LOG" value="D:\Nathapon\0.My work\01.IoT\00.AX\PYTHON\00.CFM\ETCHING\MOVE_ETCH\LOG" />
+        <add key="DISTINATION" value="D:\Nathapon\0.My work\01.IoT\00.AX\PYTHON\00.CFM\ETCHING\MOVE_ETCH\IN" />
+        <add key="SOURCE" value="\\10.17.164.209\iot" />
+        <add key="FILE_TYPE" value=".xlsm" />
+    </appSettings>
+</configuration>
