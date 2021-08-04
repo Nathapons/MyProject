@@ -29,3 +29,6 @@ __init__.py
 
 # File Exe
 *.exe
+
+# Other
+*.xlsx

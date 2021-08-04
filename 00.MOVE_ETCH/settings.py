@@ -33,8 +33,7 @@ class Settings:
     def read_config(self):
         path = os.path.dirname(os.path.abspath(__file__))
         xml_file = "AppConfig.xml"
-        xml_path = os.path.join(path, xml_file)
-        doc = minidom.parse("./AppConfig.xml")
+        doc = minidom.parse(xml_file)
 
         # Start read XML file
         sql = doc.getElementsByTagName('sql')

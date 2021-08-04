@@ -1,0 +1,19 @@
+<configuration>
+    <appSettings>
+        <add key="FPC" value="PCTT=(DESCRIPTION =(ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = FETLDB1)(PORT = 1524))(ADDRESS = (PROTOCOL = TCP)(HOST = FETLDB2)(PORT = 1524)))(CONNECT_DATA =(SERVICE_NAME = PCTTLIV)))" />
+        <add key="client" value="C:\Program Files (x86)\Oracle\instantclient_19_8" />
+        <add key="R_USER" value="irpt" />
+        <add key="R_PASSWORD" value="irptuser" />
+        <add key="FPC_USER" value="fpc" />
+        <add key="FPC_PASSWORD" value="fpc" />
+        <!-- Mail Alert -->
+        <add key="E_MAIL_TO" value="nathapon.s@th.fujikura.com" />
+        <add key="E_MAIL_CC" value="nathapon.s@th.fujikura.com" />
+        <!-- Server -->
+        <add key="F_PATH_IN" value="D:\Nathapon\0.My work\01.IoT\00.AX\PYTHON\03.SET_ETCH_RDES\SERVER\IN" />
+        <add key="F_PATH_OUT" value="D:\Nathapon\0.My work\01.IoT\00.AX\PYTHON\03.SET_ETCH_RDES\SERVER\OUT" />
+        <add key="F_PATH_ERROR" value="D:\Nathapon\0.My work\01.IoT\00.AX\PYTHON\03.SET_ETCH_RDES\SERVER\ERROR" />
+        <add key="F_PATH_LOG" value="D:\Nathapon\0.My work\01.IoT\00.AX\PYTHON\03.SET_ETCH_RDES\SERVER\LOG" />
+        <add key="F_FILE_TYPE" value=".xlsm" />
+    </appSettings>
+</configuration>

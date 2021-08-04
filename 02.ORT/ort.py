@@ -1,8 +1,7 @@
 from pandas.io import excel
-import pyxlsb
 import pandas as pd
 import os
-from shutil import copy2
+from shutil import copyfile
 from settings import Settings
 
 
@@ -10,6 +9,7 @@ class Ort:
     def __init__(self):
         self.config = Settings()
         self.total_copy = 0
+        self.error_copy = 0
 
     def program(self):
         self.config.write_debug(word="Start Program")
@@ -20,6 +20,7 @@ class Ort:
             self.config.write_debug(word=f"  Program define error => {str_error}")
 
         self.config.write_debug(word=f"  Total copy file => {self.total_copy}")
+        self.config.write_debug(word=f"  Error copy file => {self.error_copy}")
         self.config.write_debug(word="End Program")
 
     def get_ort_excel(self):
@@ -128,20 +129,29 @@ class Ort:
         is_item_test_path = os.path.isdir(item_test_path)
         is_lotno_path = os.path.isdir(lotno_path)
 
-        if is_product_path == False:
-            os.mkdir(product_path)
-        if is_item_test_path == False:
-            os.mkdir(item_test_path)
-        if is_lotno_path == False:
-            os.mkdir(lotno_path)
+        try:
+            if is_product_path == False:
+                os.mkdir(product_path)
+            if is_item_test_path == False:
+                os.mkdir(item_test_path)
+            if is_lotno_path == False:
+                os.mkdir(lotno_path)
+        except Exception as error:
+            str_error = str(error)
+            self.config.write_debug(f'      Server Access is denied when create folder => {str_error}')
 
         filename = os.path.basename(source)
         destination = os.path.join(lotno_path, filename)
         is_file_exist = os.path.isfile(destination)
         
         if is_file_exist == False:
-            copy2(source, destination)
-            self.total_copy += 1
+            try:
+                copyfile(source, destination)
+                self.total_copy += 1
+            except Exception as error:
+                str_error = str(error)
+                self.error_copy += 1
+                self.config.write_debug(f'     Copy file Error => {str_error}')
 
 
 if __name__ == '__main__':

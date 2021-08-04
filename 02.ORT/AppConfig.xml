@@ -1,11 +1,11 @@
 <configuration>
     <appSettings>
-        <add key="F_LOG" value="D:\Nathapon\0.My work\01.IoT\00.AX\PYTHON\01.ANC\ORT\LOG" />
+        <add key="F_LOG" value="D:\Nathapon\0.My work\01.IoT\00.AX\PYTHON\02.ORT\LOG" />
         <!-- Server -->
         <add key="YAMAHA_SOURCE1" value="\\10.17.73.53\ORT_Result\37.OST\R2-40-131" />
         <add key="NIDECH_SOURCE1" value="\\10.17.73.53\ORT_Result\37.OST\W-40-112" />
-        <add key="DESTINATION" value="D:\Nathapon\0.My work\01.IoT\00.AX\PYTHON\01.ANC\ORT\TEST" />
+        <add key="DESTINATION" value="\\10.17.73.53\ORT_Result\37.OST\0.SAPARATE_FILE" />
         <add key="ORT_PATH" value="\\10.17.78.169\Main_DATA\00.Record status ORT" />
-        <add key="S_NOT_READ" value="ห้ามลบ, List Item, Operator, รอ copy สแกนรอเข้าตู้คู่" />
+        <add key="S_NOT_READ" value="ห้ามลบ, List Item, Operator, รอ copy สแกนรอเข้าตู้คู่, Add output" />
     </appSettings>
 </configuration>

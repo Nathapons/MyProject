@@ -8,20 +8,20 @@ from datetime import datetime
 class MoveRdes:
     def __init__(self):
         # Call class from another file
-        self.settings = Settings
+        self.config = Settings
+        self.oracle, self.config = self.config.read_config(self)
  
         try:
             # Connect Oracle
-            self.oracle, self.config = self.settings.read_config(self)
-            self.settings.write_debug(self, word="Start Program", log_path=self.config['log'])
+            self.config.write_debug(self, word="Start Program", log_path=self.config['log'])
             
             # Start Program
             self.get_in_folder()
 
         except Exception as error:
-            self.settings.write_debug(self, word=str(error), log_path=self.config['log'])
+            self.config.write_debug(self, word=str(error), log_path=self.config['log'])
         finally:
-            self.settings.write_debug(self, word="End Program", log_path=self.config['log'])
+            self.config.write_debug(self, word="End Program", log_path=self.config['log'])
 
     def get_in_folder(self):
         source = self.config['source']
@@ -50,18 +50,28 @@ class MoveRdes:
                                 shutil.copy2(src=source_file, dst=server_file)
                                 
                                 # Copy to Complete
-                                month_now = int(datetime.now().strftime('%m'))
-                                file_monthnum = int(file.split('.')[0])
-                                if os.path.isdir(complete_folder) == False:
-                                    os.mkdir(complete_folder)
+                                try:
+                                    now_format = int(datetime.now().strftime('%Y%m'))
+                                    str_file_format = str(folder2) + str(file.split('.')[0])
+                                    file_format = int(str_file_format)
+                                    print(now_format, file_format)
+                                    # if os.path.isdir(complete_folder) == False:
+                                    #     os.mkdir(complete_folder)
 
-                                if os.path.isfile(complete_file):
-                                    os.remove(complete_file)
+                                    # if os.path.isfile(complete_file):
+                                    #     os.remove(complete_file)
 
-                                if file_monthnum < month_now:
-                                    shutil.move(src=source_file, dst=complete_file)
-                                elif file_monthnum == month_now:
-                                    shutil.copy2(src=source_file, dst=complete_file)
+                                    # if file_monthnum < month_now:
+                                    #     shutil.move(src=source_file, dst=complete_file)
+                                    # elif file_monthnum == month_now:
+                                    #     shutil.copy2(src=source_file, dst=complete_file)
+                                except Exception as error:
+                                    str_error = str(error)
+                                    self.config.write_debug(
+                                        self, 
+                                        word=f" Get folder error => {str_error}", 
+                                        log_path=self.config['log']
+                                    )
 
 
 if __name__ == '__main__':
