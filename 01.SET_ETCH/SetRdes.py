@@ -51,6 +51,8 @@ class SetRdes:
         file.close()
 
         dt_raw = []
+        now = datetime.datetime.now()
+        now_format = now.strftime('%Y%m%d')
         dt_etch_alarm = []
         dt_chem_alarm = []
         for sheetname in sheetnames:
@@ -73,8 +75,8 @@ class SetRdes:
                         new_row = {}
                         time = df.iloc[i-2,0]
                         date = df.iloc[i-3,0]
-                        if date is nan and time is nan:
-                            break
+                        if str(date) == 'nan' or str(time) == 'nan':
+                            continue
                         
                         str_date = ""
                         str_time = ""
@@ -156,7 +158,7 @@ class SetRdes:
                         for col in range(21, 24):
                             chemical = df.iloc[i, col]
                             try:
-                                if chemical is nan and (not isinstance(chemical, float)):
+                                if str(chemical) == 'nan' and (not isinstance(chemical, float)):
                                     chem_empty = True
                                 else:
                                     chemical = round(df.iloc[i, col], 3)
@@ -183,14 +185,14 @@ class SetRdes:
                         new_row['2'] = str_time
                         new_row['3'] = target
                         new_row['4'] = line_speed
-                        new_row['5'] = (line if line is not nan else '-')
+                        new_row['5'] = (line if line is not 'nan' else '-')
                         new_row['21'] = record
                         new_row['22'] = '-'
                         new_row['23'] = str_date
                         new_row['24'] = machine
                         new_row['25'] = '-'
 
-                        if nan not in new_row.values():
+                        if 'nan' not in new_row.values():
                             dt_raw.append(new_row)
 
                 except Exception as error:
@@ -198,14 +200,14 @@ class SetRdes:
 
         df = pd.DataFrame(dt_raw)
 
-        # if len(df) > 0:    
-        #     # Insert Datatable
-        #     file_code = '00048'
-        #     df_code = self.get_master_by_wrm_code(file_code)
-        #     filename = os.path.basename(file_path)
-        #     self.config.write_debug(word="     Start insert to Datatabase")
-        #     self.config.insert_data(str_filename=filename, df=df, file_code=file_code, df_code=df_code)
-        #     self.config.write_debug(word="     End insert to Datatabase")
+        if len(df) > 0:    
+            # Insert Datatable
+            file_code = '00048'
+            df_code = self.get_master_by_wrm_code(file_code)
+            filename = os.path.basename(file_path)
+            self.config.write_debug(word="     Start insert to Datatabase")
+            self.config.insert_data(str_filename=filename, df=df, file_code=file_code, df_code=df_code)
+            self.config.write_debug(word="     End insert to Datatabase")
 
     def get_master_by_wrm_code(self, file_code):
         sql_command = f"""

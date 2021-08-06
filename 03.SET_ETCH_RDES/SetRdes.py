@@ -181,14 +181,14 @@ class SetRdes:
                         new_row['2'] = str_time
                         new_row['3'] = target
                         new_row['4'] = line_speed
-                        new_row['5'] = (line if line is not nan else '-')
+                        new_row['5'] = (line if str(line) != 'nan' else '-')
                         new_row['21'] = record
                         new_row['22'] = '-'
                         new_row['23'] = str_date
                         new_row['24'] = machine
                         new_row['25'] = '-'
 
-                        if nan not in new_row.values():
+                        if 'nan' not in new_row.values():
                             dt_raw.append(new_row)
 
                 except Exception as error:
@@ -201,9 +201,9 @@ class SetRdes:
             file_code = '00048'
             df_code = self.get_master_by_wrm_code(file_code)
             filename = os.path.basename(file_path)
-            self.config.write_debug(word="     Start insert to Datatabase")
+            self.config.write_debug(word="     Start insert to ETCH Datatabase")
             self.config.insert_working_record(str_filename=filename, df=df, file_code=file_code, df_code=df_code)
-            self.config.write_debug(word="     End insert to Datatabase")
+            self.config.write_debug(word="     End insert to ETCH Datatabase")
 
     def get_master_by_wrm_code(self, file_code):
         sql_command = f"""
@@ -236,6 +236,8 @@ class SetRdes:
         datatable = []
         for sheetname in sheetnames:
             df = pd.read_excel(file_path, sheetname, header=8)
+            if len(df) == 0:
+                continue
             
             for i in range(len(df)):
                 weight_title = df.loc[i, 'น้ำหนัก']
@@ -258,7 +260,7 @@ class SetRdes:
 
                     if isinstance(date, str):
                         date_list = str(date).split('-')
-                        date_format = date_list[0] + "/" + date_list[1] + "/" + date_list[2]
+                        date_form = date_list[0] + "/" + date_list[1] + "/" + date_list[2]
 
                     if str(time) == 'datetime.time':
                         time_form = date.strftime('%H.%m')
@@ -323,18 +325,37 @@ class SetRdes:
                         col += 1
 
                     if has_upper and has_lower and has_chem:
+                        target = df.iloc[i-3, 1]
+                        datarow['1'] = target
+                        line_speed = df.iloc[i-3, 2]
+                        datarow['2'] = line_speed
+                        line = df.iloc[i-3, 3]
+                        datarow['3'] = (line if str(line) != 'nan' else '-')
                         upper_uni = df.iloc[i, 11]
                         datarow['9'] = round(upper_uni, 3)
                         lower_uni = df.iloc[i, 19]
                         datarow['15'] = round(lower_uni, 3)
+                        header_code = header_date + header_time
+                        datarow['header'] = header_code
+                        datarow['date'] = date_form
+                        datarow['time'] = time_form
+                        operator = df.iloc[i, 24]
+                        datarow['operator'] = operator
+                        datarow['machine'] = sheetname
 
                         datatable.append(datarow)
 
         rdes = pd.DataFrame(datatable)
         print(rdes)
-        # writer = pd.ExcelWriter('simple_data.xlsx', engine='xlsxwriter')
-        # rdes.to_excel(writer, index=False, sheet_name='หน้าที่1')
-                    
+        # if len(df) > 0:
+        #     smf_group = '0001'
+        #     filename = os.path.basename(file_path)
+        #     self.config.write_debug(word="     Start insert to RDES Datatabase")
+        #     self.config.insert_working_record(str_filename=filename, df=rdes, smf_group=smf_group)   
+        #     self.config.write_debug(word="     End insert to RDES Datatabase")
+
+    def insert_smf_record(self, str_filename, df, smf_group):
+        pass
 
 if __name__ == '__main__':
     app = SetRdes()

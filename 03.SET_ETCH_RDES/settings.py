@@ -11,7 +11,7 @@ from email.mime.multipart import MIMEMultipart
 
 class Settings:
     def __init__(self):
-        doc = minidom.parse("./AppConfig.xml")
+        doc = minidom.parse("D:\\Nathapon\\0.My work\\01.IoT\\00.AX\\PYTHON\\03.SET_ETCH_RDES\\AppConfig.xml")
 
         # Start read XML file
         add = doc.getElementsByTagName('add')
