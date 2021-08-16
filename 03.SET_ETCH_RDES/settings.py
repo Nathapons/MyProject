@@ -75,7 +75,6 @@ class Settings:
         finally:
             self.write_debug(word="Send mail complete")
 
-
     def send_mail_html(self, datatable):
         # Datatable => dict in list => [{}]
         html_body = ""
@@ -158,6 +157,7 @@ class Settings:
         return str_error
 
     def connect_irpt(self):
+        os.environ['PATH'] = self.client
         dsn_tns = cx_Oracle.makedsn('fetldb1', '1524', service_name='PCTTLIV')
         conn = cx_Oracle.connect(user=self.report_user, password=self.report_password, dsn=dsn_tns)
         return conn
@@ -167,9 +167,7 @@ class Settings:
         datatable = None
 
         try:
-            cur = conn.cursor()    
-            cur.execute(sql_command)
-            datatable = cur.fetchall()
+            datatable = pd.read_sql(sql_command, con=conn)
         except Exception as error:
             self.write_debug(word=f"  Error : {str(error)}")
         finally:
@@ -187,7 +185,7 @@ class Settings:
             conn.commit()
         except Exception as error:
             str_error = str(error)
-            self.write_debug(word=f"  Error : {str(error)}")
+            print(sql_command)
         finally:
             conn.close()
 
@@ -326,7 +324,35 @@ class Settings:
 
             for sql_command in sql_commands:
                 self.save_fpc(sql_command=sql_command)
-    
+
+    def get_max_header(self, header_code, factory, str_date, str_time, str_mc):
+        sql_command = f"""
+            SELECT MAX(T.SRH_CODE) AS HC
+            FROM SMF_RECORD_HEADER T
+            WHERE T.SRH_CODE LIKE '{header_code}%'
+                  AND T.SRH_MC = '{str_mc}'
+                  AND T.SRH_KEY_3 = '{factory}'
+                  AND T.SRH_KEY_4 = '{str_date}'
+                  AND T.SRH_KEY_5 = '{str_time}'
+        """
+        hc_df = self.select_irpt(sql_command=sql_command)
+        max_hc = hc_df.loc[0, 'HC']
+        if max_hc is not None:
+            return max_hc
+
+        sql_command = f"""
+            SELECT MAX(T.SRH_CODE) AS HC
+            FROM SMF_RECORD_HEADER T
+            WHERE T.SRH_CODE LIKE '{header_code}%'
+        """
+        hc_df = self.select_irpt(sql_command=sql_command)
+        max_hc = hc_df.loc[0, 'HC']
+        if max_hc is not None:
+            return int(max_hc) + 1
+
+        max_hc = header_code + "0001"
+        return max_hc   
+
 
 if __name__ == "__main__":
     app = Settings()

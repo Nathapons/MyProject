@@ -7,6 +7,7 @@ import pandas as pd
 
 class SetRdes:
     def __init__(self):
+        self.total_commit = 0
         self.config = Settings()
         self.config.write_debug(word="Start Program")
         self.get_file_dir()
@@ -229,6 +230,7 @@ class SetRdes:
         return df_spec
 
     def des_program(self, file_path):
+        filename = os.path.basename(file_path)
         file = pd.ExcelFile(file_path)
         sheetnames = [sheet for sheet in file.sheet_names if 'DES' in sheet.upper()]
         file.close()
@@ -254,17 +256,24 @@ class SetRdes:
                     if str(date) == 'nan' or str(time) == 'nan':
                         continue
 
-                    if str(date) == 'datetime.datetime':
-                        date_form = date.strftime('%d/%m/%Y')
-                        header_date = date.strftime('%Y%m%d')
+                    try:
+                        if isinstance(date, datetime.datetime):
+                            date_form = date.strftime('%d/%m/%Y')
+                            date_sql = date.strftime('%Y%m%d')
 
-                    if isinstance(date, str):
-                        date_list = str(date).split('-')
-                        date_form = date_list[0] + "/" + date_list[1] + "/" + date_list[2]
+                        if isinstance(date, str):
+                            date_list = str(date).split('-')
+                            date_form = date_list[0] + "/" + date_list[1] + "/" + date_list[2]
+                            date_sql = date_list[2] + date_list[1] + date_list[0]
 
-                    if str(time) == 'datetime.time':
-                        time_form = date.strftime('%H.%m')
-                        header_time = date.strftime('%H%m')
+                        time_list = str(time).split(':')
+                        hrs = time_list[0]
+                        mins = time_list[1]
+                        time_form = hrs + "." + mins
+                    except Exception as error:
+                        str_error = str(error)
+                        # self.config.write_debug(word=f"      Convert at row {i+10} has error {str_error}")
+                        continue 
 
                     # Etching Upper
                     has_upper = True
@@ -279,9 +288,8 @@ class SetRdes:
                             has_upper = False
                         else:
                             etch_upper = df.iloc[i, col]
-
-                        str_seq = str(seq)
-                        datarow[str_seq] = etch_upper
+                            str_seq = str(seq)
+                            datarow[str_seq] = round(etch_upper, 2)
 
                         seq += 1
                         col += 1
@@ -299,9 +307,8 @@ class SetRdes:
                             has_lower = False
                         else:
                             etch_lower = df.iloc[i, col]
-                        # Append Datarow
-                        str_seq = str(seq)
-                        datarow[str_seq] = etch_lower
+                            str_seq = str(seq)
+                            datarow[str_seq] = round(etch_lower, 2)
                         
                         seq += 1
                         col += 1
@@ -319,7 +326,7 @@ class SetRdes:
                             chem = df.iloc[i, col]
                         # Append Datarow
                         str_seq = str(seq)
-                        datarow[str_seq] = chem
+                        datarow[str_seq] = round(chem, 2)
 
                         seq += 1
                         col += 1
@@ -332,30 +339,205 @@ class SetRdes:
                         line = df.iloc[i-3, 3]
                         datarow['3'] = (line if str(line) != 'nan' else '-')
                         upper_uni = df.iloc[i, 11]
-                        datarow['9'] = round(upper_uni, 3)
+                        datarow['9'] = round(upper_uni, 2)
                         lower_uni = df.iloc[i, 19]
-                        datarow['15'] = round(lower_uni, 3)
-                        header_code = header_date + header_time
-                        datarow['header'] = header_code
+                        datarow['15'] = round(lower_uni, 2)
+                        
                         datarow['date'] = date_form
                         datarow['time'] = time_form
+                        datarow['date_sql'] = date_sql
                         operator = df.iloc[i, 24]
+                        factory = filename.split('_')[0]
+                        datarow['factory'] = factory
                         datarow['operator'] = operator
                         datarow['machine'] = sheetname
-
                         datatable.append(datarow)
 
         rdes = pd.DataFrame(datatable)
-        print(rdes)
-        # if len(df) > 0:
-        #     smf_group = '0001'
-        #     filename = os.path.basename(file_path)
-        #     self.config.write_debug(word="     Start insert to RDES Datatabase")
-        #     self.config.insert_working_record(str_filename=filename, df=rdes, smf_group=smf_group)   
-        #     self.config.write_debug(word="     End insert to RDES Datatabase")
+        if len(rdes) > 0:
+            smf_group = '0001'
+            self.config.write_debug(word="     Start insert to RDES Datatabase")
+            self.insert_smf_record(str_filename=filename, df=rdes, smf_group=smf_group)   
+            self.config.write_debug(word="     End insert to RDES Datatabase")
 
     def insert_smf_record(self, str_filename, df, smf_group):
-        pass
+        query_list = []
+        
+        for i in range(len(df)):
+            date = df.loc[i, 'date']
+            machine = df.loc[i, 'machine']
+            date_sql = df.loc[i, 'date_sql']
+            factory = df.loc[i, 'factory']
+            operator = df.loc[i, 'operator']
+            time = df.loc[i, 'time']
+            code = self.config.get_max_header(
+                header_code=date_sql,
+                factory=factory,
+                str_date=date,
+                str_time=time,
+                str_mc=machine
+            )
+            
+            if str(code) == "" or str(time) == "" or str(date) == "":
+                continue
+        
+            header = f"""
+                MERGE INTO SMF_RECORD_HEADER T
+                USING (
+                    SELECT
+                            'CFM' AS SRD_UNIT
+                            , '{smf_group}' AS SRD_GROUP
+                            , '{code}' AS SRD_CODE
+                            , TO_DATE('{date}', 'DD/MM/YYYY') AS SRD_DATE
+                            , '-' AS SRD_LOT_NO
+                            , '-' AS SRD_PROCESS
+                            , '{machine}' AS SRD_MC
+                            , '-' AS SRD_KEY_1
+                            , '-' AS SRD_KEY_2
+                            , '{factory}' AS SRD_KEY_3
+                            , '{date}' AS SRD_KEY_4
+                            , '{time}' AS SRD_KEY_5
+                            , '{operator}' AS SRD_OPERATOR
+                            , '{time}' AS SRD_TIME
+                            , '{str_filename}' AS SRD_FILENAME
+                    FROM DUAL
+                ) D
+                ON (
+                    T.SRH_UNIT = D.SRD_UNIT
+                AND T.SRH_GROUP = D.SRD_GROUP
+                AND T.SRH_CODE = D.SRD_CODE
+                AND T.SRH_KEY_4 = D.SRD_KEY_4
+                AND T.SRH_KEY_5 = D.SRD_KEY_5
+                )
+                WHEN MATCHED THEN
+                UPDATE
+                    SET 
+                        T.SRH_LOT_NO = D.SRD_LOT_NO
+                        , T.SRH_PROCESS = D.SRD_PROCESS
+                        , T.SRH_MC = D.SRD_MC
+                        , T.SRH_OPERATOR = D.SRD_OPERATOR
+                        , T.SRH_TIME = D.SRD_TIME
+                        , T.SRH_DATA_FILENAME = D.SRD_FILENAME
+                WHEN NOT MATCHED THEN
+                INSERT (
+                    T.SRH_UNIT
+                    , T.SRH_GROUP
+                    , T.SRH_CODE
+                    , T.SRH_DATE
+                    , T.SRH_LOT_NO
+                    , T.SRH_PROCESS
+                    , T.SRH_MC
+                    , T.SRH_KEY_1
+                    , T.SRH_KEY_2
+                    , T.SRH_KEY_3
+                    , T.SRH_KEY_4
+                    , T.SRH_KEY_5
+                    , T.SRH_OPERATOR
+                    , T.SRH_TIME
+                    , T.SRH_DATA_FILENAME
+                )
+                VALUES (
+                    D.SRD_UNIT
+                    , D.SRD_GROUP
+                    , D.SRD_CODE
+                    , D.SRD_DATE
+                    , D.SRD_LOT_NO
+                    , D.SRD_PROCESS
+                    , D.SRD_MC
+                    , D.SRD_KEY_1
+                    , D.SRD_KEY_2
+                    , D.SRD_KEY_3
+                    , D.SRD_KEY_4
+                    , D.SRD_KEY_5
+                    , D.SRD_OPERATOR
+                    , D.SRD_TIME
+                    , D.SRD_FILENAME
+                )
+            """
+            query_list.append(header)
+
+            seq = 1
+            while seq <= 18:
+                str_seq = str(seq)
+                val = df.loc[i, str_seq]
+                detail = f"""
+                MERGE INTO SMF_RECORD_DETAIL T
+                USING (
+                    SELECT 
+                            'CFM' AS SRD_UNIT
+                            , '{smf_group}' AS SRD_GROUP
+                            , '{code}' AS SRD_HEADER_CODE
+                            , '-' AS SRD_KEY_1
+                            , '-' AS SRD_KEY_2
+                            , '-' AS SRD_KEY_3
+                            , '{str_seq}' AS SRD_SEQ
+                            , '1' AS SRD_ROUND
+                            , '-' AS SRD_VALUE_CHR
+                            , {val} AS SRD_VALUE_NUM
+                    FROM DUAL
+                ) D
+                ON (
+                    T.SRD_UNIT = D.SRD_UNIT
+                AND T.SRD_GROUP = D.SRD_GROUP
+                AND T.SRD_HEADER_CODE = D.SRD_HEADER_CODE
+                AND T.SRD_SEQ = D.SRD_SEQ
+                AND T.SRD_ROUND = D.SRD_ROUND
+                AND T.SRD_VALUE_CHR = D.SRD_VALUE_CHR
+                )
+                WHEN MATCHED THEN
+                UPDATE
+                    SET T.SRD_VALUE_NUM = D.SRD_VALUE_NUM
+                WHEN NOT MATCHED THEN
+                INSERT (
+                    T.SRD_UNIT
+                    , T.SRD_GROUP
+                    , T.SRD_HEADER_CODE
+                    , T.SRD_KEY_1
+                    , T.SRD_KEY_2
+                    , T.SRD_KEY_3
+                    , T.SRD_SEQ
+                    , T.SRD_ROUND
+                    , T.SRD_VALUE_CHR
+                    , T.SRD_VALUE_NUM
+                )
+                VALUES (
+                    D.SRD_UNIT
+                    , D.SRD_GROUP
+                    , D.SRD_HEADER_CODE
+                    , D.SRD_KEY_1
+                    , D.SRD_KEY_2
+                    , D.SRD_KEY_3
+                    , D.SRD_SEQ
+                    , D.SRD_ROUND
+                    , D.SRD_VALUE_CHR
+                    , D.SRD_VALUE_NUM
+                )
+                """
+                query_list.append(detail)
+                seq += 1
+
+            for query in query_list:
+                str_error = self.config.save_irpt(sql_command=query)
+                if str_error == "":
+                    self.total_commit += 1
+            
+            # break
+
+    def get_max_header(self, str_date, str_mc):
+        sql_command = f"""
+            SELECT MAX(T.SRH_CODE) AS HC
+            FROM SMF_RECORD_HEADER T
+            WHERE T.SRH_CODE LIKE '{str_date}%
+                  AND T.SRH_MC = '{str_mc}'
+        """
+        hc_df = self.config.select_irpt(sql_command=sql_command)
+        max_hc = hc_df.loc[0, 'HC']
+        if max_hc == None:
+            max_hc = str_date + '0001'
+        else:
+            max_hc = int(max_hc) + 1
+
+        return max_hc
 
 if __name__ == '__main__':
     app = SetRdes()
