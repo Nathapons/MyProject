@@ -6,9 +6,9 @@
 
         <add key="ALERT_TO" value="nathapon.s@th.fujikura.com" />
         <add key="ALERT_CC" value="nathapon.s@th.fujikura.com" />
-        <add key="LOG" value="D:\Nathapon\0.My work\01.IoT\00.AX\PYTHON\00.CFM\ETCHING\MOVE_ETCH\LOG" />
-        <add key="DISTINATION" value="D:\Nathapon\0.My work\01.IoT\00.AX\PYTHON\00.CFM\ETCHING\MOVE_ETCH\IN" />
-        <add key="SOURCE" value="\\10.17.164.209\iot" />
+        <add key="LOG" value="D:\Nathapon\0.My work\01.IoT\00.AX\PYTHON\00.MOVE_ETCH\LOG" />
+        <add key="DISTINATION" value="D:\Nathapon\0.My work\01.IoT\00.AX\PYTHON\03.SET_ETCH_RDES\SERVER\IN" />
+        <add key="SOURCE" value="D:\Nathapon\0.My work\01.IoT\00.AX\PYTHON\00.MOVE_ETCH\IOT" />
         <add key="FILE_TYPE" value=".xlsm" />
     </appSettings>
 </configuration>
