@@ -33,4 +33,5 @@ __init__.py
 # Other
 *.xlsx
 *.xlsb
+*.xlsm
 *.sql
