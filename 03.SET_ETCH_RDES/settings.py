@@ -330,6 +330,8 @@ class Settings:
             SELECT MAX(T.SRH_CODE) AS HC
             FROM SMF_RECORD_HEADER T
             WHERE T.SRH_CODE LIKE '{header_code}%'
+                  AND T.SRH_GROUP = '0001'
+                  AND T.SRH_UNIT = 'CFM'
                   AND T.SRH_MC = '{str_mc}'
                   AND T.SRH_KEY_3 = '{factory}'
                   AND T.SRH_KEY_4 = '{str_date}'
@@ -344,6 +346,8 @@ class Settings:
             SELECT MAX(T.SRH_CODE) AS HC
             FROM SMF_RECORD_HEADER T
             WHERE T.SRH_CODE LIKE '{header_code}%'
+                  AND T.SRH_UNIT = 'CFM'
+                  AND T.SRH_GROUP = '0001'
         """
         hc_df = self.select_irpt(sql_command=sql_command)
         max_hc = hc_df.loc[0, 'HC']
