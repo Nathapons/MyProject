@@ -40,6 +40,7 @@ class SetRdes:
                         os.remove(file_error)
                     shutil.move(file_in, file_error)
                 finally:
+                    self.config.write_debug(word=f"     Total commit: {self.total_commit} data")
                     self.config.write_debug(word=f"     End Read file : {str(file)}")
                     
         else:
@@ -215,7 +216,7 @@ class SetRdes:
                             , '-' AS SRD_KEY_1
                             , '-' AS SRD_KEY_2
                             , '{factory}' AS SRD_KEY_3
-                            , '{date}' AS SRD_KEY_4
+                            , TO_CHAR('{date}', 'DD/MM/YYYY') AS SRD_KEY_4
                             , '{time}' AS SRD_KEY_5
                             , '{operator}' AS SRD_OPERATOR
                             , '{time}' AS SRD_TIME
@@ -340,8 +341,7 @@ class SetRdes:
                 str_error = self.config.save_irpt(sql_command=query)
                 if str_error == "":
                     self.total_commit += 1
-            
-            # break
+            query_list.clear()
 
     def get_max_header(self, str_date, str_mc):
         sql_command = f"""

@@ -22,7 +22,6 @@ class Settings:
         if os.path.isdir(log_path) == False:
             os.makedirs(log_path)
 
-        now_file = os.path.join(log_path, now)
         log_txt = f'{now}.txt'
         log_file_path = os.path.join(log_path, log_txt)
         log = open(log_file_path, mode='a')
@@ -31,7 +30,6 @@ class Settings:
         log.close()
 
     def read_config(self):
-        path = os.path.dirname(os.path.abspath(__file__))
         xml_file = "AppConfig.xml"
         doc = minidom.parse(xml_file)
 

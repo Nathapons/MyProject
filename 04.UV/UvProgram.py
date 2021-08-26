@@ -47,23 +47,6 @@ class UvProgram:
         self.run_program.bind('<Button-1>', self.overview)
         self.run_program.grid(row=2, column=0)
 
-        treeview_frame = Frame(big_frame)
-        headers = ['Filename', 'Item Code', 'FETL lot', 'Report status']
-        self.pull_force_treeview = ttk.Treeview(treeview_frame, column=headers, show='headings',
-                                                height=self.treeview_height)
-        style = ttk.Style()
-        style.configure("Treeview.Heading", font=('Arial', 16, 'bold'))
-        style.configure("Treeview", font=('Arial', 12))
-        vertical_scrollbar = ttk.Scrollbar(treeview_frame, orient="vertical", command=self.pull_force_treeview.yview)
-        self.pull_force_treeview.configure(yscrollcommand=vertical_scrollbar.set)
-        for header in headers:
-            self.pull_force_treeview.heading(header, text=header)
-            if header == 'Filename':
-                column_width = 360
-            else:
-                column_width = 160
-            self.pull_force_treeview.column(header, anchor='center', width=column_width, minwidth=0)
-            self.pull_force_treeview.bind("<Double-1>", self.pull_force_link_tree)
         root.mainloop()
 
     def get_ports(self):
