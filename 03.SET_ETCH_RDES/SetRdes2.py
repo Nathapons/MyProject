@@ -5,46 +5,45 @@ import datetime
 import pandas as pd
 
 
-class SetRdes:
+class SetRdes(Settings):
     def __init__(self):
         self.total_commit = 0
-        self.config = Settings()
-        self.config.write_debug(word="Start Program")
+        super().write_debug(word="Start Program")
         self.get_file_dir()
-        self.config.write_debug(word="End Program")
+        super().write_debug(word="End Program")
 
     def get_file_dir(self):
         # Get filename in Folder IN
-        file_dir = os.listdir(self.config.source_path)
+        file_dir = os.listdir(super().source_path)
 
         if len(file_dir) > 0:
             for file in file_dir:
                 now = datetime.datetime.now()
                 now_format = now.strftime('%Y%m%d_%H%m_')
                 new_file = now_format + file
-                file_in = os.path.join(self.config.source_path, file)
-                file_out = os.path.join(self.config.out_path, new_file)
-                file_error = os.path.join(self.config.error_path, new_file)
+                file_in = os.path.join(super().source_path, file)
+                file_out = os.path.join(super().out_path, new_file)
+                file_error = os.path.join(super().error_path, new_file)
 
                 try:
-                    if str(file).endswith(self.config.file_type) and (not str(file).startswith('~$')):
-                        self.config.write_debug(word=f"     Open file : {str(file)}")
+                    if str(file).endswith(super().file_type) and (not str(file).startswith('~$')):
+                        super().write_debug(word=f"     Open file : {str(file)}")
                         self.des_program(file_path=file_in)
 
                         if os.path.isfile(file_out):
                             os.remove(file_out)
                         shutil.move(file_in, file_out)
                 except Exception as e:
-                    self.config.write_debug(word=f"     Error=> {e}")
+                    super().write_debug(word=f"     Error=> {e}")
                     if os.path.isfile(file_error):
                         os.remove(file_error)
                     shutil.move(file_in, file_error)
                 finally:
-                    self.config.write_debug(word=f"     Total commit: {self.total_commit} data")
-                    self.config.write_debug(word=f"     End Read file : {str(file)}")
+                    super().write_debug(word=f"     Total commit: {self.total_commit} data")
+                    super().write_debug(word=f"     End Read file : {str(file)}")
                     
         else:
-            self.config.write_debug(word="     There is no FILE. Wait until next event")
+            super().write_debug(word="     There is no FILE. Wait until next event")
 
     def des_program(self, file_path):
         filename = os.path.basename(file_path)
@@ -76,7 +75,7 @@ class SetRdes:
                     try:
                         if isinstance(date, datetime.datetime):
                             date_form = date.strftime('%m/%d/%Y')
-                            date_sql = date.strftime('%Y%d%m')
+                            date_sql = date.strftime('%Y%m%d')
 
                         if isinstance(date, str):
                             date_list = str(date).split('-')
@@ -89,7 +88,7 @@ class SetRdes:
                         time_form = hrs + "." + mins
                     except Exception as error:
                         str_error = str(error)
-                        # self.config.write_debug(word=f"      Convert at row {i+10} has error {str_error}")
+                        # super().write_debug(word=f"      Convert at row {i+10} has error {str_error}")
                         continue 
 
                     # Etching Upper
@@ -175,12 +174,12 @@ class SetRdes:
                             datatable.append(datarow)
 
         rdes = pd.DataFrame(datatable)
-        # print(rdes)
+        print(rdes)
         if len(rdes) > 0:
             smf_group = '0001'
-            self.config.write_debug(word="     Start insert to RDES Datatabase")
+            super().write_debug(word="     Start insert to RDES Datatabase")
             self.insert_smf_record(str_filename=filename, df=rdes, smf_group=smf_group)   
-            self.config.write_debug(word="     End insert to RDES Datatabase")
+            super().write_debug(word="     End insert to RDES Datatabase")
 
     def insert_smf_record(self, str_filename, df, smf_group):
         query_list = []
@@ -192,7 +191,7 @@ class SetRdes:
             factory = df.loc[i, 'factory']
             operator = df.loc[i, 'operator']
             time = df.loc[i, 'time']
-            code = self.config.get_max_header(
+            code = super().get_max_header(
                 header_code=date_sql,
                 factory=factory,
                 str_date=date,
@@ -339,7 +338,7 @@ class SetRdes:
                 seq += 1
 
             for query in query_list:
-                str_error = self.config.save_irpt(sql_command=query)
+                str_error = super().save_irpt(sql_command=query)
                 if str_error == "":
                     self.total_commit += 1
                 else:
@@ -353,7 +352,7 @@ class SetRdes:
             WHERE T.SRH_CODE LIKE '{str_date}%
                   AND T.SRH_MC = '{str_mc}'
         """
-        hc_df = self.config.select_irpt(sql_command=sql_command)
+        hc_df = super().select_irpt(sql_command=sql_command)
         max_hc = hc_df.loc[0, 'HC']
         if max_hc == None:
             max_hc = str_date + '0001'

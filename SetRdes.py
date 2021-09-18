@@ -75,8 +75,8 @@ class SetRdes:
 
                     try:
                         if isinstance(date, datetime.datetime):
-                            date_form = date.strftime('%m/%d/%Y')
-                            date_sql = date.strftime('%Y%d%m')
+                            date_form = date.strftime('%d/%m/%Y')
+                            date_sql = date.strftime('%Y%m%d')
 
                         if isinstance(date, str):
                             date_list = str(date).split('-')
@@ -175,7 +175,6 @@ class SetRdes:
                             datatable.append(datarow)
 
         rdes = pd.DataFrame(datatable)
-        # print(rdes)
         if len(rdes) > 0:
             smf_group = '0001'
             self.config.write_debug(word="     Start insert to RDES Datatabase")

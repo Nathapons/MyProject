@@ -1,11 +1,9 @@
-from typing import Text
 import serial
 import serial.tools.list_ports as tool
-import time
 from tkinter import messagebox as msb
 
 
-class ReadProgram():
+class ReadProgram:
    def get_ports(self):
       # Function for getting port number
       ports = tool.comports()
@@ -35,7 +33,6 @@ class ReadProgram():
             ser.write(cmd.encode() + b'\n')
             out = ser.readline()
             value = str(out.decode())
-            print(value)
             if '00000000' not in str(out):
                break
          
@@ -44,8 +41,6 @@ class ReadProgram():
          return uv_value
 
       except Exception as err:
-         print(str(err))
+         str_error = str(err)
       finally:
          return uv_value
-
-obj = ReadProgram()

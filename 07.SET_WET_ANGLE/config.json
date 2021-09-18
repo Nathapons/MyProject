@@ -1,0 +1,26 @@
+{
+    "oracle": [
+        {
+            "client": "C:\\Program Files (x86)\\Oracle\\instantclient_19_8",
+            "irpt_username": "irpt",
+            "irpt_password": "irptuser",
+            "fpc_username": "fpc",
+            "fpc_password": "fpc"
+        }
+    ],
+    "file": [
+        {
+            "in": "\\\\10.17.73.105\\d$\\WETANGLE1",
+            "out": "D:\\Nathapon\\0.My work\\01.IoT\\00.AX\\PYTHON\\05.MOVE_WET_ANGLE\\IN",
+            "error": "D:\\Nathapon\\0.My work\\01.IoT\\00.AX\\PYTHON\\05.MOVE_WET_ANGLE\\LOG",
+            "log": ".csv",
+            "type": ".csv"
+        }
+    ],
+    "mail": [
+        {
+            "to": "",
+            "cc": ""
+        }
+    ]
+}

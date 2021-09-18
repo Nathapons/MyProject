@@ -1,0 +1,18 @@
+{
+    "server": [
+        {
+            "source": "source",
+            "destination": "destination"
+        }
+    ],
+    "about_file": [
+        {
+            "type": "CSV, YCR, YER"
+        }
+    ],
+    "log": [
+        {
+            "path": "D:\\Nathapon\\0.My work\\01.IoT\\00.AX\\PYTHON\\06.OST\\LOG"
+        }
+    ]
+}

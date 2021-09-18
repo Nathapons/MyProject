@@ -219,7 +219,7 @@ class Settings:
         if max_hc is not None:
             return int(max_hc) + 1
 
-        max_hc = header_code + "0001" #202109140001 => Header code YYYYMMDD + 4 digit RGPZ-001-1A, RGPZ-001-0A
+        max_hc = header_code + "0001"
         return max_hc   
 
 

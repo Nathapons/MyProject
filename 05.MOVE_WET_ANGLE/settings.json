@@ -1,0 +1,23 @@
+{
+    "oracle": [
+        {
+            "client": "C:\\Program Files (x86)\\Oracle\\instantclient_19_8",
+            "irpt_username": "irpt",
+            "irpt_password": "irptuser"
+        }
+    ],
+    "file": [
+        {
+            "src": "\\\\10.17.73.105\\d$\\WETANGLE1",
+            "des": "\\\\ta1d150804\\d$\\TASK_PROGRAM\\SMT\\WET_ANGLE1\\SET_DB\\IN",
+            "log": "\\\\ta1d150804\\d$\\TASK_PROGRAM\\SMT\\WET_ANGLE1\\MOVE_FILE\\LOG",
+            "type": ".csv"
+        }
+    ],
+    "mail": [
+        {
+            "to": "",
+            "cc": ""
+        }
+    ]
+}

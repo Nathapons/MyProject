@@ -1,45 +1,45 @@
 from datetime import datetime
+import shutil
 from xml.dom import minidom
 import cx_Oracle
 import pandas as pd
-import os 
+from os import mkdir, path, environ, remove
+from shutil import move
 import win32com.client
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from json import load
 
 
 class Settings:
     def __init__(self):
-        doc = minidom.parse("D:\\Nathapon\\0.My work\\01.IoT\\00.AX\\PYTHON\\03.SET_ETCH_RDES\\AppConfig.xml")
+        file = open(file='config.json')
+        data = load(file)
+        self.oracle = data['oracle'][0]
+        self.file = data['file'][0]
+        self.mail = data['mail'][0]
+        file.close()
 
-        # Start read XML file
-        add = doc.getElementsByTagName('add')
-        # Get Database Information
-        self.dsn = add[0].getAttribute('value')
-        self.client = add[1].getAttribute('value')
-        self.report_user = add[2].getAttribute('value')
-        self.report_password = add[3].getAttribute('value')
-        self.fpc_user = add[4].getAttribute('value')
-        self.fpc_password = add[5].getAttribute('value')
-        self.mail_to = add[6].getAttribute('value')
-        self.mail_cc = add[7].getAttribute('value')
-        self.source_path = add[8].getAttribute('value')
-        self.out_path = add[9].getAttribute('value')
-        self.error_path = add[10].getAttribute('value')
-        self.log_path = add[11].getAttribute('value')
-        self.file_type = add[12].getAttribute('value')
-    
+    def get_oracle(self):
+        return self.oracle
+
+    def get_file(self):
+        return self.file
+
+    def get_mail(self):
+        return self.mail
+
     def write_debug(self, word):
+        log_path = self.file['log']
         now = datetime.now().strftime('%Y%m%d')
 
         # Create Folder When don't have Log Fodler
-        if os.path.isdir(self.log_path) == False:
-            os.makedirs(self.log_path)
+        if path.isdir(log_path) == False:
+            mkdir(log_path)
 
-        now_file = os.path.join(self.log_path, now)
         log_txt = f'{now}.txt'
-        log_file_path = os.path.join(self.log_path, log_txt)
+        log_file_path = path.join(log_path, log_txt)
         log = open(log_file_path, mode='a')
         string_now = datetime.now().strftime('%d/%m/%Y %X')
         log.writelines('{}--> {}\n'.format(string_now, word))
@@ -118,9 +118,11 @@ class Settings:
             self.send_mail(body=html_body)
 
     def connect_fpc(self):
-        os.environ['PATH'] = self.client
+        environ['PATH'] = self.client
         dsn_tns = cx_Oracle.makedsn('fetldb1', '1524', service_name='PCTTLIV')
-        conn = cx_Oracle.connect(user=self.fpc_user, password=self.fpc_password, dsn=dsn_tns)
+        username = self.oracle.get('fpc_username')
+        password = self.oracle.get('fpc_password')
+        conn = cx_Oracle.connect(user=username, password=password, dsn=dsn_tns)
         return conn
 
     def select_fpc(self, sql_command):
@@ -129,9 +131,6 @@ class Settings:
 
         try:
             datatable = pd.read_sql(sql_command, con=conn)
-            # cur = conn.cursor()    
-            # cur.execute(sql_command)
-            # datatable = cur.fetchall()
         except Exception as error:
             self.write_debug(word=f"  Error : {str(error)}")
         finally:
@@ -144,7 +143,6 @@ class Settings:
         str_error = ""
 
         try:
-            # conn.autocommit = True
             cur = conn.cursor()
             cur.execute(sql_command)
             conn.commit()
@@ -157,9 +155,12 @@ class Settings:
         return str_error
 
     def connect_irpt(self):
-        os.environ['PATH'] = self.client
+        client = self.oracle.get('client')
+        environ['PATH'] = client
+        username = self.oracle.get('irpt_username')
+        password = self.oracle.get('irpt_password')
         dsn_tns = cx_Oracle.makedsn('fetldb1', '1524', service_name='PCTTLIV')
-        conn = cx_Oracle.connect(user=self.report_user, password=self.report_password, dsn=dsn_tns)
+        conn = cx_Oracle.connect(user=username, password=password, dsn=dsn_tns)
         return conn
 
     def select_irpt(self, sql_command):
@@ -190,38 +191,7 @@ class Settings:
 
         return str_error
 
-    def get_max_header(self, header_code, factory, str_date, str_time, str_mc):
-        sql_command = f"""
-            SELECT MAX(T.SRH_CODE) AS HC
-            FROM SMF_RECORD_HEADER T
-            WHERE T.SRH_CODE LIKE '{header_code}%'
-                  AND T.SRH_GROUP = '0001'
-                  AND T.SRH_UNIT = 'CFM'
-                  AND T.SRH_MC = '{str_mc}'
-                  AND T.SRH_KEY_3 = '{factory}'
-                  AND T.SRH_KEY_4 = '{str_date}'
-                  AND T.SRH_KEY_5 = '{str_time}'
-        """
-        hc_df = self.select_irpt(sql_command=sql_command)
-        max_hc = hc_df.loc[0, 'HC']
-        if max_hc is not None:
-            return max_hc
-
-        sql_command = f"""
-            SELECT MAX(T.SRH_CODE) AS HC
-            FROM SMF_RECORD_HEADER T
-            WHERE T.SRH_CODE LIKE '{header_code}%'
-                  AND T.SRH_UNIT = 'CFM'
-                  AND T.SRH_GROUP = '0001'
-        """
-        hc_df = self.select_irpt(sql_command=sql_command)
-        max_hc = hc_df.loc[0, 'HC']
-        if max_hc is not None:
-            return int(max_hc) + 1
-
-        max_hc = header_code + "0001" #202109140001 => Header code YYYYMMDD + 4 digit RGPZ-001-1A, RGPZ-001-0A
-        return max_hc   
-
-
-if __name__ == "__main__":
-    app = Settings()
+    def move_file(self, src, dst):
+        if path.isfile(dst):
+            remove(dst)
+        shutil.move(src=src, dst=dst)
